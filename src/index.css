@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --font-ar-display: "Alexandria", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-ar-sans: "IBM Plex Sans Arabic", system-ui, -apple-system, sans-serif;
+  --font-en-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-en-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-ink: #1d1d1f;
+  --color-muted: #6e6e73;
+  --color-surface: #f5f5f7;
+  --color-hairline: #d2d2d7;
+  --color-accent: #0071e3;
+  --color-accent-hover: #0062c4;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color: #1d1d1f;
+    background-color: #ffffff;
+  }
+
+  html[lang="ar"] {
+    font-family: var(--font-ar-sans);
+  }
+
+  html[lang="ar"] h1,
+  html[lang="ar"] h2,
+  html[lang="ar"] h3,
+  html[lang="ar"] h4 {
+    font-family: var(--font-ar-display);
+    text-wrap: balance;
+  }
+
+  html[lang="en"] {
+    font-family: var(--font-en-sans);
+  }
+
+  html[lang="en"] h1,
+  html[lang="en"] h2,
+  html[lang="en"] h3,
+  html[lang="en"] h4 {
+    font-family: var(--font-en-display);
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :focus-visible {
+    outline: 2px solid #0071e3;
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "لها",
+  "description": "منصة تجمع الشركات الناشئة لعرض خدماتها وتحديد العميل الأنسب، وتسهّل للعملاء البحث والوصول إلى الخدمة التي يحتاجونها.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
