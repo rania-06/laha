@@ -1,20 +1,33 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# لها (Laha) — ملتقى الشركات الناشئة والعملاء
 
-# Run and deploy your AI Studio app
+منصة ثنائية اللغة (العربية RTL / الإنجليزية LTR) تجمع الشركات الناشئة لعرض خدماتها وتحديد معيار العميل الأنسب، وتسهّل للعملاء البحث والمقارنة حسب المنطقة وإرسال طلبات مطابقة محفوظة، مع ترشيح ذكي مدعوم بـ Gemini.
 
-This contains everything you need to run your app locally.
+## المزايا الرئيسية
+- **تصفح وبحث مفتوح للزوار**: بحث فوري، تصفية حسب 6 مناطق سعودية و4 مجالات، ومقارنة تفاعلية بين خدمتين أو ثلاث.
+- **الترشيح الذكي (Gemini AI + مطابقة الدليل)**: خادم Express عبر `/api/ai/match` مع بديل فوري محلي عند الحاجة.
+- **حسابات بصلاحيات مزدوجة (Firebase Auth + Firestore)**: تسجيل دخول عبر Google مع اختيار الدور (شركة ناشئة / عميل) وقواعد أمان صارمة (`firestore.rules`).
+- **لوحة إدارة متكاملة (`لوحتي`)**: إضافة وتعديل وحذف خدمات الشركات الناشئة، إدارة الطلبات الواردة مع ملاحظات القبول/الاعتذار، وتعديل أو حذف الطلبات قيد المراجعة.
 
-View your app in AI Studio: https://ai.studio/apps/23d28319-c461-4e9b-8a40-4ad3d3f70e5c
+## التشغيل المحلي
 
-## Run Locally
+```bash
+npm install
+cp .env.example .env
+# أضف GEMINI_API_KEY داخل .env
+npm run dev
+```
 
-**Prerequisites:**  Node.js
+يعمل التطبيق على `http://localhost:3000`.
 
+## البناء للإنتاج
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+npm run build
+NODE_ENV=production npx tsx server.ts
+```
+
+## النشر على Render (عبر GitHub)
+1. ارفع المستودع إلى GitHub (تأكد من وجود `render.yaml` و`firebase-applet-config.json` وعدم رفع `.env`).
+2. من لوحة Render اختر **New → Blueprint** واربط المستودع.
+3. أدخل قيمة `GEMINI_API_KEY` في متغيرات البيئة (Environment Variables).
+4. أضف نطاق تطبيقك على Render داخل **Authorized domains** في إعدادات Firebase Authentication ليسمح بتسجيل الدخول بحساب Google.

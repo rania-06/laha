@@ -1,0 +1,467 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // Hardened Global Primitives
+    // =========================================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrapAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'r.alqefari@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrapAdmin() || (
+        isVerifiedUser() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidCategory(cat) {
+      return cat is string && cat in ['tech', 'design', 'growth', 'operations'];
+    }
+
+    function isValidRegion(reg) {
+      return reg is string && reg in ['riyadh', 'makkah', 'eastern', 'madinah', 'qassim', 'asir'];
+    }
+
+    function isLocalizedText(val, minLen, maxLen) {
+      return val is map
+        && val.keys().hasAll(['ar', 'en'])
+        && val.keys().hasOnly(['ar', 'en'])
+        && val.ar is string && val.ar.size() >= minLen && val.ar.size() <= maxLen
+        && val.en is string && val.en.size() >= minLen && val.en.size() <= maxLen;
+    }
+
+    function isValidKeywords(list) {
+      return list is list
+        && list.size() <= 20
+        && (list.size() == 0 || (list[0] is string && list[0].size() >= 1 && list[0].size() <= 60));
+    }
+
+    // =========================================================================
+    // Validation Blueprints (Anti-Update-Gap Helpers)
+    // =========================================================================
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+          'uid', 'displayName', 'email', 'photoURL', 'accountType',
+          'organizationName', 'regionId', 'contactInfo', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'email', 'photoURL', 'accountType',
+          'organizationName', 'regionId', 'contactInfo', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.uid)
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 120
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 200
+        && data.photoURL is string && data.photoURL.size() <= 500
+        && data.accountType is string && data.accountType in ['startup', 'client']
+        && data.organizationName is string && data.organizationName.size() <= 140
+        && isValidRegion(data.regionId)
+        && data.contactInfo is string && data.contactInfo.size() <= 200
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidStartup(data) {
+      return data.keys().hasAll([
+          'ownerId', 'categoryId', 'regionId', 'startupName', 'serviceTitle',
+          'city', 'deliveryTime', 'deliveryDays', 'startingBudget', 'budgetSar',
+          'summary', 'idealClient', 'deliverables', 'responseTime',
+          'teamAndSupport', 'contactChannel', 'keywords', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'categoryId', 'regionId', 'startupName', 'serviceTitle',
+          'city', 'deliveryTime', 'deliveryDays', 'startingBudget', 'budgetSar',
+          'summary', 'idealClient', 'deliverables', 'responseTime',
+          'teamAndSupport', 'contactChannel', 'keywords', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.ownerId)
+        && isValidCategory(data.categoryId)
+        && isValidRegion(data.regionId)
+        && isLocalizedText(data.startupName, 2, 120)
+        && isLocalizedText(data.serviceTitle, 4, 160)
+        && isLocalizedText(data.city, 2, 80)
+        && isLocalizedText(data.deliveryTime, 2, 80)
+        && data.deliveryDays is number && data.deliveryDays >= 1 && data.deliveryDays <= 365
+        && isLocalizedText(data.startingBudget, 2, 80)
+        && data.budgetSar is number && data.budgetSar >= 0 && data.budgetSar <= 10000000
+        && isLocalizedText(data.summary, 10, 600)
+        && isLocalizedText(data.idealClient, 6, 400)
+        && isLocalizedText(data.deliverables, 4, 400)
+        && isLocalizedText(data.responseTime, 2, 80)
+        && isLocalizedText(data.teamAndSupport, 2, 200)
+        && data.contactChannel is string && data.contactChannel.size() <= 180
+        && isValidKeywords(data.keywords)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidClientRequest(data) {
+      return data.keys().hasAll([
+          'clientUid', 'clientName', 'clientContact', 'categoryId', 'regionId',
+          'needDescription', 'budgetRange', 'targetStartupId', 'targetStartupOwnerId',
+          'targetStartupName', 'matchedCount', 'status', 'decisionNote',
+          'decidedByUid', 'submittedLabel', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'clientUid', 'clientName', 'clientContact', 'categoryId', 'regionId',
+          'needDescription', 'budgetRange', 'targetStartupId', 'targetStartupOwnerId',
+          'targetStartupName', 'matchedCount', 'status', 'decisionNote',
+          'decidedByUid', 'submittedLabel', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.clientUid)
+        && isLocalizedText(data.clientName, 2, 120)
+        && data.clientContact is string && data.clientContact.size() <= 180
+        && isValidCategory(data.categoryId)
+        && isValidRegion(data.regionId)
+        && isLocalizedText(data.needDescription, 10, 1000)
+        && isLocalizedText(data.budgetRange, 2, 100)
+        && isValidId(data.targetStartupId)
+        && isValidId(data.targetStartupOwnerId)
+        && isLocalizedText(data.targetStartupName, 2, 120)
+        && data.matchedCount is number && data.matchedCount >= 0 && data.matchedCount <= 1000
+        && data.status is string && data.status in ['pending', 'accepted', 'declined']
+        && data.decisionNote is string && data.decisionNote.size() <= 500
+        && data.decidedByUid is string && data.decidedByUid.size() <= 128
+        && isLocalizedText(data.submittedLabel, 1, 60)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidConversation(data) {
+      return data.keys().hasAll([
+          'clientUid', 'clientName', 'startupId', 'startupOwnerId',
+          'startupName', 'serviceTitle', 'lastMessageText', 'lastSenderUid',
+          'messageCount', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'clientUid', 'clientName', 'startupId', 'startupOwnerId',
+          'startupName', 'serviceTitle', 'lastMessageText', 'lastSenderUid',
+          'messageCount', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.clientUid)
+        && data.clientName is string && data.clientName.size() >= 1 && data.clientName.size() <= 120
+        && isValidId(data.startupId)
+        && isValidId(data.startupOwnerId)
+        && isLocalizedText(data.startupName, 2, 120)
+        && isLocalizedText(data.serviceTitle, 4, 160)
+        && data.lastMessageText is string && data.lastMessageText.size() <= 500
+        && data.lastSenderUid is string && data.lastSenderUid.size() <= 128
+        && data.messageCount is number && data.messageCount >= 0 && data.messageCount <= 10000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidChatMessage(data) {
+      return data.keys().hasAll([
+          'conversationId', 'senderUid', 'senderName', 'senderRole',
+          'clientUid', 'startupOwnerId', 'body', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'conversationId', 'senderUid', 'senderName', 'senderRole',
+          'clientUid', 'startupOwnerId', 'body', 'createdAt'
+        ])
+        && isValidId(data.conversationId)
+        && isValidId(data.senderUid)
+        && data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 120
+        && data.senderRole is string && data.senderRole in ['client', 'startup']
+        && isValidId(data.clientUid)
+        && isValidId(data.startupOwnerId)
+        && data.body is string && data.body.size() >= 1 && data.body.size() <= 1500
+        && data.createdAt is timestamp;
+    }
+
+    // =========================================================================
+    // Collection Rules
+    // =========================================================================
+
+    // 1. /admins/{uid} — Read-only admin marker
+    match /admins/{uid} {
+      allow get: if isVerifiedUser() && isValidId(uid) && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+
+    // 2. /users/{uid} — Private user profiles (PII strictly isolated)
+    match /users/{uid} {
+      allow get: if isSignedIn() && isValidId(uid) && (request.auth.uid == uid || isAdmin());
+      allow list: if false;
+
+      allow create: if isVerifiedUser()
+        && isValidId(uid)
+        && request.auth.uid == uid
+        && isValidUserProfile(incoming())
+        && incoming().uid == request.auth.uid
+        && incoming().email == request.auth.token.email
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser()
+        && isValidId(uid)
+        && isValidUserProfile(incoming())
+        && (request.auth.uid == uid || isAdmin())
+        && incoming().uid == existing().uid
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'photoURL', 'accountType',
+          'organizationName', 'regionId', 'contactInfo', 'updatedAt'
+        ]);
+
+      allow delete: if isVerifiedUser()
+        && isValidId(uid)
+        && (request.auth.uid == uid || isAdmin());
+    }
+
+    // 3. /startups/{startupId} — Public startup service listings, owner-controlled CRUD
+    match /startups/{startupId} {
+      allow get: if isValidId(startupId);
+      allow list: if true;
+
+      allow create: if isVerifiedUser()
+        && isValidId(startupId)
+        && isValidStartup(incoming())
+        && incoming().ownerId == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser()
+        && isValidId(startupId)
+        && isValidStartup(incoming())
+        && (existing().ownerId == request.auth.uid || isAdmin())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'categoryId', 'regionId', 'startupName', 'serviceTitle',
+          'city', 'deliveryTime', 'deliveryDays', 'startingBudget', 'budgetSar',
+          'summary', 'idealClient', 'deliverables', 'responseTime',
+          'teamAndSupport', 'contactChannel', 'keywords', 'updatedAt'
+        ]);
+
+      allow delete: if isVerifiedUser()
+        && isValidId(startupId)
+        && (existing().ownerId == request.auth.uid || isAdmin());
+    }
+
+    // 4. /requests/{requestId} — Scoped private client requests with action-based updates
+    match /requests/{requestId} {
+      allow get: if isVerifiedUser()
+        && isValidId(requestId)
+        && (
+          existing().clientUid == request.auth.uid ||
+          existing().targetStartupOwnerId == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow list: if isVerifiedUser()
+        && (
+          resource.data.clientUid == request.auth.uid ||
+          resource.data.targetStartupOwnerId == request.auth.uid ||
+          isBootstrapAdmin()
+        );
+
+      allow create: if isVerifiedUser()
+        && isValidId(requestId)
+        && isValidClientRequest(incoming())
+        && incoming().clientUid == request.auth.uid
+        && incoming().status == 'pending'
+        && incoming().decisionNote == ''
+        && incoming().decidedByUid == ''
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/startups/$(incoming().targetStartupId))
+        && get(/databases/$(database)/documents/startups/$(incoming().targetStartupId)).data.ownerId == incoming().targetStartupOwnerId;
+
+      allow update: if isVerifiedUser()
+        && isValidId(requestId)
+        && isValidClientRequest(incoming())
+        && incoming().clientUid == existing().clientUid
+        && incoming().targetStartupId == existing().targetStartupId
+        && incoming().targetStartupOwnerId == existing().targetStartupOwnerId
+        && incoming().targetStartupName == existing().targetStartupName
+        && incoming().matchedCount == existing().matchedCount
+        && incoming().submittedLabel == existing().submittedLabel
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          // Action 1: Client edits brief while request is still pending
+          (
+            existing().clientUid == request.auth.uid
+            && existing().status == 'pending'
+            && incoming().status == 'pending'
+            && incoming().decisionNote == existing().decisionNote
+            && incoming().decidedByUid == existing().decidedByUid
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'clientName', 'clientContact', 'categoryId', 'regionId',
+              'needDescription', 'budgetRange', 'updatedAt'
+            ])
+          )
+          ||
+          // Action 2: Target startup owner finalizes decision from pending -> accepted/declined
+          (
+            existing().targetStartupOwnerId == request.auth.uid
+            && existing().status == 'pending'
+            && incoming().status in ['accepted', 'declined']
+            && incoming().decidedByUid == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'status', 'decisionNote', 'decidedByUid', 'updatedAt'
+            ])
+          )
+          ||
+          // Action 3: Verified admin override
+          (
+            isAdmin()
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'status', 'decisionNote', 'decidedByUid', 'updatedAt'
+            ])
+          )
+        );
+
+      allow delete: if isVerifiedUser()
+        && isValidId(requestId)
+        && (existing().clientUid == request.auth.uid || isAdmin());
+    }
+
+    // 5. /conversations/{conversationId} — Direct client-to-startup chat threads
+    match /conversations/{conversationId} {
+      allow get: if isVerifiedUser()
+        && isValidId(conversationId)
+        && (
+          existing().clientUid == request.auth.uid ||
+          existing().startupOwnerId == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow list: if isVerifiedUser()
+        && (
+          resource.data.clientUid == request.auth.uid ||
+          resource.data.startupOwnerId == request.auth.uid ||
+          isBootstrapAdmin()
+        );
+
+      allow create: if isVerifiedUser()
+        && isValidId(conversationId)
+        && isValidConversation(incoming())
+        && incoming().clientUid == request.auth.uid
+        && (
+          (incoming().messageCount == 0 && incoming().lastMessageText == '' && incoming().lastSenderUid == '') ||
+          (incoming().messageCount == 1 && incoming().lastMessageText.size() >= 1 && incoming().lastSenderUid == request.auth.uid)
+        )
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time
+        && exists(/databases/$(database)/documents/startups/$(incoming().startupId))
+        && get(/databases/$(database)/documents/startups/$(incoming().startupId)).data.ownerId == incoming().startupOwnerId;
+
+      allow update: if isVerifiedUser()
+        && isValidId(conversationId)
+        && isValidConversation(incoming())
+        && (
+          existing().clientUid == request.auth.uid ||
+          existing().startupOwnerId == request.auth.uid ||
+          isAdmin()
+        )
+        && incoming().clientUid == existing().clientUid
+        && incoming().clientName == existing().clientName
+        && incoming().startupId == existing().startupId
+        && incoming().startupOwnerId == existing().startupOwnerId
+        && incoming().startupName == existing().startupName
+        && incoming().serviceTitle == existing().serviceTitle
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().lastSenderUid == request.auth.uid
+        && incoming().messageCount == existing().messageCount + 1
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'lastMessageText', 'lastSenderUid', 'messageCount', 'updatedAt'
+        ]);
+
+      allow delete: if isVerifiedUser()
+        && isValidId(conversationId)
+        && (
+          existing().clientUid == request.auth.uid ||
+          existing().startupOwnerId == request.auth.uid ||
+          isAdmin()
+        );
+
+      // 5b. /conversations/{conversationId}/messages/{messageId} — Master-Gated Atomic Messages
+      match /messages/{messageId} {
+        allow get: if isVerifiedUser()
+          && isValidId(conversationId)
+          && isValidId(messageId)
+          && exists(/databases/$(database)/documents/conversations/$(conversationId))
+          && (
+            get(/databases/$(database)/documents/conversations/$(conversationId)).data.clientUid == request.auth.uid ||
+            get(/databases/$(database)/documents/conversations/$(conversationId)).data.startupOwnerId == request.auth.uid ||
+            isAdmin()
+          );
+
+        allow list: if isVerifiedUser()
+          && isValidId(conversationId)
+          && (
+            resource.data.clientUid == request.auth.uid ||
+            resource.data.startupOwnerId == request.auth.uid ||
+            isBootstrapAdmin()
+          );
+
+        allow create: if isVerifiedUser()
+          && isValidId(conversationId)
+          && isValidId(messageId)
+          && isValidChatMessage(incoming())
+          && incoming().conversationId == conversationId
+          && incoming().senderUid == request.auth.uid
+          && incoming().createdAt == request.time
+          && existsAfter(/databases/$(database)/documents/conversations/$(conversationId))
+          && getAfter(/databases/$(database)/documents/conversations/$(conversationId)).data.clientUid == incoming().clientUid
+          && getAfter(/databases/$(database)/documents/conversations/$(conversationId)).data.startupOwnerId == incoming().startupOwnerId
+          && getAfter(/databases/$(database)/documents/conversations/$(conversationId)).data.lastSenderUid == request.auth.uid
+          && getAfter(/databases/$(database)/documents/conversations/$(conversationId)).data.updatedAt == request.time
+          && (
+            (
+              getAfter(/databases/$(database)/documents/conversations/$(conversationId)).data.clientUid == request.auth.uid &&
+              incoming().senderRole == 'client'
+            )
+            ||
+            (
+              getAfter(/databases/$(database)/documents/conversations/$(conversationId)).data.startupOwnerId == request.auth.uid &&
+              incoming().senderRole == 'startup'
+            )
+          );
+
+        allow update: if false;
+
+        allow delete: if isVerifiedUser()
+          && isValidId(conversationId)
+          && isValidId(messageId)
+          && (existing().senderUid == request.auth.uid || isAdmin());
+      }
+    }
+  }
+}

@@ -1,0 +1,496 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile storing account persona (startup or client), organization details, and private contact information.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID matching the document ID."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Display name of the user."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 200,
+          "description": "Verified account email (PII restricted to owner and admin)."
+        },
+        "photoURL": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500,
+          "description": "Optional profile avatar URL."
+        },
+        "accountType": {
+          "type": "string",
+          "enum": ["startup", "client"],
+          "description": "Marketplace persona selected by the user."
+        },
+        "organizationName": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 140,
+          "description": "Startup or client business name."
+        },
+        "regionId": {
+          "type": "string",
+          "enum": ["riyadh", "makkah", "eastern", "madinah", "qassim", "asir"],
+          "description": "Primary region in Saudi Arabia."
+        },
+        "contactInfo": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 200,
+          "description": "Private preferred contact details for matching."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was last updated."
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "email",
+        "photoURL",
+        "accountType",
+        "organizationName",
+        "regionId",
+        "contactInfo",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StartupService": {
+      "title": "StartupService",
+      "description": "Public startup service listing displayed in the regional directory and comparison matrix.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the startup owner who manages this service."
+        },
+        "categoryId": {
+          "type": "string",
+          "enum": ["tech", "design", "growth", "operations"],
+          "description": "Service discipline category."
+        },
+        "regionId": {
+          "type": "string",
+          "enum": ["riyadh", "makkah", "eastern", "madinah", "qassim", "asir"],
+          "description": "Region where the startup operates."
+        },
+        "startupName": {
+          "type": "object",
+          "description": "Bilingual startup name ({ ar, en }, each 2-120 chars)."
+        },
+        "serviceTitle": {
+          "type": "object",
+          "description": "Bilingual service title ({ ar, en }, each 4-160 chars)."
+        },
+        "city": {
+          "type": "object",
+          "description": "Bilingual city name ({ ar, en }, each 2-80 chars)."
+        },
+        "deliveryTime": {
+          "type": "object",
+          "description": "Bilingual delivery timeline label ({ ar, en }, each 2-80 chars)."
+        },
+        "deliveryDays": {
+          "type": "number",
+          "description": "Estimated delivery duration in days (1-365)."
+        },
+        "startingBudget": {
+          "type": "object",
+          "description": "Bilingual starting budget label ({ ar, en }, each 2-80 chars)."
+        },
+        "budgetSar": {
+          "type": "number",
+          "description": "Numeric starting budget in SAR (0-10000000)."
+        },
+        "summary": {
+          "type": "object",
+          "description": "Bilingual service summary ({ ar, en }, each 10-600 chars)."
+        },
+        "idealClient": {
+          "type": "object",
+          "description": "Bilingual ideal client profile ({ ar, en }, each 6-400 chars)."
+        },
+        "deliverables": {
+          "type": "object",
+          "description": "Bilingual deliverables description ({ ar, en }, each 4-400 chars)."
+        },
+        "responseTime": {
+          "type": "object",
+          "description": "Bilingual response time SLA ({ ar, en }, each 2-80 chars)."
+        },
+        "teamAndSupport": {
+          "type": "object",
+          "description": "Bilingual team and support description ({ ar, en }, each 2-200 chars)."
+        },
+        "contactChannel": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 180,
+          "description": "Public business contact channel (website or inquiry email)."
+        },
+        "keywords": {
+          "type": "array",
+          "description": "Up to 20 search keywords (each <= 60 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when service was published."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when service was last updated."
+        }
+      },
+      "required": [
+        "ownerId",
+        "categoryId",
+        "regionId",
+        "startupName",
+        "serviceTitle",
+        "city",
+        "deliveryTime",
+        "deliveryDays",
+        "startingBudget",
+        "budgetSar",
+        "summary",
+        "idealClient",
+        "deliverables",
+        "responseTime",
+        "teamAndSupport",
+        "contactChannel",
+        "keywords",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ClientRequest": {
+      "title": "ClientRequest",
+      "description": "Private match request submitted by a client to a target startup with startup decision status and response note.",
+      "type": "object",
+      "properties": {
+        "clientUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the client who submitted the request."
+        },
+        "clientName": {
+          "type": "object",
+          "description": "Bilingual client or organization name ({ ar, en }, each 2-120 chars)."
+        },
+        "clientContact": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 180,
+          "description": "Client contact info shared only with the target startup owner."
+        },
+        "categoryId": {
+          "type": "string",
+          "enum": ["tech", "design", "growth", "operations"],
+          "description": "Requested service category."
+        },
+        "regionId": {
+          "type": "string",
+          "enum": ["riyadh", "makkah", "eastern", "madinah", "qassim", "asir"],
+          "description": "Preferred region."
+        },
+        "needDescription": {
+          "type": "object",
+          "description": "Bilingual description of project need ({ ar, en }, each 10-1000 chars)."
+        },
+        "budgetRange": {
+          "type": "object",
+          "description": "Bilingual estimated budget range ({ ar, en }, each 2-100 chars)."
+        },
+        "targetStartupId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Document ID of the targeted startup in /startups."
+        },
+        "targetStartupOwnerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner UID of the targeted startup (verified against /startups on create)."
+        },
+        "targetStartupName": {
+          "type": "object",
+          "description": "Bilingual name of the targeted startup ({ ar, en }, each 2-120 chars)."
+        },
+        "matchedCount": {
+          "type": "number",
+          "description": "Number of matching startups in category at submission time (0-1000)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "accepted", "declined"],
+          "description": "Lifecycle decision status; pending transitions once to accepted or declined."
+        },
+        "decisionNote": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500,
+          "description": "Optional note from the startup explaining acceptance next steps or decline reason."
+        },
+        "decidedByUid": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 128,
+          "description": "UID of the startup owner or admin who finalized the decision."
+        },
+        "submittedLabel": {
+          "type": "object",
+          "description": "Bilingual display label for submission date ({ ar, en }, each 1-60 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when request was submitted."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when request was last modified."
+        }
+      },
+      "required": [
+        "clientUid",
+        "clientName",
+        "clientContact",
+        "categoryId",
+        "regionId",
+        "needDescription",
+        "budgetRange",
+        "targetStartupId",
+        "targetStartupOwnerId",
+        "targetStartupName",
+        "matchedCount",
+        "status",
+        "decisionNote",
+        "decidedByUid",
+        "submittedLabel",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Direct messaging thread between a client and a startup owner.",
+      "type": "object",
+      "properties": {
+        "clientUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the client participant."
+        },
+        "clientName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Display name of the client participant."
+        },
+        "startupId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Document ID of the startup service in /startups."
+        },
+        "startupOwnerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner UID of the startup (verified against /startups)."
+        },
+        "startupName": {
+          "type": "object",
+          "description": "Bilingual startup name ({ ar, en }, each 2-120 chars)."
+        },
+        "serviceTitle": {
+          "type": "object",
+          "description": "Bilingual service title ({ ar, en }, each 4-160 chars)."
+        },
+        "lastMessageText": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500,
+          "description": "Preview text of the most recent message."
+        },
+        "lastSenderUid": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 128,
+          "description": "UID of the participant who sent the most recent message."
+        },
+        "messageCount": {
+          "type": "number",
+          "description": "Monotonically increasing count of messages in the thread (0-10000)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when conversation was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when conversation was last updated."
+        }
+      },
+      "required": [
+        "clientUid",
+        "clientName",
+        "startupId",
+        "startupOwnerId",
+        "startupName",
+        "serviceTitle",
+        "lastMessageText",
+        "lastSenderUid",
+        "messageCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Individual immutable message inside a client-startup conversation subcollection.",
+      "type": "object",
+      "properties": {
+        "conversationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Parent conversation document ID."
+        },
+        "senderUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the message sender."
+        },
+        "senderName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Display name of the message sender."
+        },
+        "senderRole": {
+          "type": "string",
+          "enum": ["client", "startup"],
+          "description": "Role of sender within this conversation."
+        },
+        "clientUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Denormalized client UID matching parent conversation for secure zero-lookup list queries."
+        },
+        "startupOwnerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Denormalized startup owner UID matching parent conversation for secure zero-lookup list queries."
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1500,
+          "description": "Message text body."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when message was sent."
+        }
+      },
+      "required": [
+        "conversationId",
+        "senderUid",
+        "senderName",
+        "senderRole",
+        "clientUid",
+        "startupOwnerId",
+        "body",
+        "createdAt"
+      ]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Read-only admin membership marker managed out-of-band.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        }
+      },
+      "required": ["uid"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private user profile documents isolated per authenticated owner."
+    },
+    "/startups/{startupId}": {
+      "schema": { "$ref": "#/entities/StartupService" },
+      "description": "Publicly readable startup services directory with owner-restricted mutations."
+    },
+    "/requests/{requestId}": {
+      "schema": { "$ref": "#/entities/ClientRequest" },
+      "description": "Private client match requests scoped strictly to the client, target startup owner, and admin."
+    },
+    "/conversations/{conversationId}": {
+      "schema": { "$ref": "#/entities/Conversation" },
+      "description": "Private direct chat threads scoped strictly to clientUid, startupOwnerId, and admin."
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Immutable chat messages gated by parent conversation ownership and atomic batch update."
+    },
+    "/admins/{uid}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Immutable admin allowlist collection."
+    }
+  }
+}

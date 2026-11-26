@@ -188,7 +188,7 @@ export const UI_COPY = {
     workspace: {
       title: 'شارك في المنصة مباشرة.',
       subtitle:
-        'بدون تسجيل دخول أو تعقيد — اعرض خدمة شركتك الناشئة أو أرسل احتياجك كعميل وتابع قرار الملاءمة فورًا.',
+        'انشر خدمة شركتك الناشئة بحفظ سحابي دائم أو أرسل طلب مطابقة مخصّص وتابع القرارات والردود من لوحتك.',
       tabStartup: 'اعرض خدمة شركتك',
       tabClient: 'أرسل احتياجك كعميل',
       startupForm: {
@@ -275,7 +275,7 @@ export const UI_COPY = {
       },
     },
     footer: {
-      note: 'نموذج أولي تفاعلي بدون تسجيل دخول أو دفع إلكتروني أو قاعدة بيانات.',
+      note: 'منصة لها — دليل الشركات الناشئة الإقليمي والمطابقة الذكية مع حفظ سحابي آمن.',
     },
   },
   en: {
@@ -458,9 +458,9 @@ export const UI_COPY = {
       ],
     },
     workspace: {
-      title: 'Start right away—no sign-up needed.',
+      title: 'Publish or request directly.',
       subtitle:
-        'Publish your startup service into the live directory or submit a client brief and see the decision board update instantly.',
+        'Publish your startup service with cloud persistence or submit a targeted client brief and track decisions in your dashboard.',
       tabStartup: 'List Your Startup',
       tabClient: 'Submit Client Need',
       startupForm: {
@@ -547,7 +547,7 @@ export const UI_COPY = {
       },
     },
     footer: {
-      note: 'Interactive front-end prototype running directly in your browser (no login, payments, or database).',
+      note: 'Laha — Regional Startups Marketplace with smart matching and secure cloud persistence.',
     },
   },
 } as const;

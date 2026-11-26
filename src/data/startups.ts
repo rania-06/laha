@@ -21,8 +21,24 @@ export interface RegionMeta {
   hubCity: LocalizedText;
 }
 
+export type AccountType = 'startup' | 'client';
+
+export interface UserProfile {
+  uid: string;
+  displayName: string;
+  email: string;
+  photoURL: string;
+  accountType: AccountType;
+  organizationName: string;
+  regionId: RegionId;
+  contactInfo: string;
+  createdAtMs?: number;
+  updatedAtMs?: number;
+}
+
 export interface StartupService {
   id: string;
+  ownerId?: string;
   categoryId: CategoryId;
   regionId: RegionId;
   startupName: LocalizedText;
@@ -37,22 +53,61 @@ export interface StartupService {
   deliverables: LocalizedText;
   responseTime: LocalizedText;
   teamAndSupport: LocalizedText;
+  contactChannel?: string;
   keywords: string[];
+  isSeedDemo?: boolean;
+  createdAtMs?: number;
+  updatedAtMs?: number;
 }
 
 export type ClientDecisionStatus = 'pending' | 'accepted' | 'declined';
 
 export interface ClientRequest {
   id: string;
+  clientUid?: string;
   clientName: LocalizedText;
+  clientContact?: string;
   categoryId: CategoryId;
   regionId: RegionId;
   needDescription: LocalizedText;
   budgetRange: LocalizedText;
+  targetStartupId?: string;
+  targetStartupOwnerId?: string;
   targetStartupName?: LocalizedText;
   matchedCount: number;
   status: ClientDecisionStatus;
+  decisionNote?: string;
+  decidedByUid?: string;
   submittedLabel: LocalizedText;
+  createdAtMs?: number;
+  updatedAtMs?: number;
+}
+
+export interface Conversation {
+  id: string;
+  clientUid: string;
+  clientName: string;
+  startupId: string;
+  startupOwnerId: string;
+  startupName: LocalizedText;
+  serviceTitle: LocalizedText;
+  lastMessageText: string;
+  lastSenderUid: string;
+  messageCount: number;
+  createdAtMs?: number;
+  updatedAtMs?: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  conversationId: string;
+  senderUid: string;
+  senderName: string;
+  senderRole: 'client' | 'startup';
+  clientUid: string;
+  startupOwnerId: string;
+  body: string;
+  createdAtMs?: number;
 }
 
 export const CATEGORIES: CategoryMeta[] = [

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: laha-marketplace
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npx tsx server.ts
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: GEMINI_API_KEY
+        sync: false
